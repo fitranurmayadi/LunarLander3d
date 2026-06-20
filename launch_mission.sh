@@ -50,48 +50,18 @@ if [[ $NO_DASHBOARD -eq 0 ]]; then
   python live_dashboard.py &
   DASHBOARD_PID=$!
   echo "[Launcher] Dashboard PID = $DASHBOARD_PID"
-  # 2. Wait for dashboard window to be ready
-  sleep 4.0
-  # 3. Position the dashboard window on the RIGHT side of screen
-  if command -v xdotool &>/dev/null; then
-    for attempt in 1 2 3 4 5; do
-      WIN_ID=$(xdotool search --name "LunarLander3D Dashboard" 2>/dev/null | head -1)
-      if [ -n "$WIN_ID" ]; then
-        xdotool windowmove "$WIN_ID" 1100 60
-        echo "[Launcher] Dashboard moved to x=1100 y=60"
-        break
-      fi
-      sleep 0.5
-    done
-  else
-    echo "[Launcher] xdotool not found. Install with: sudo apt install xdotool"
-    echo "[Launcher] Please position the dashboard window manually to the RIGHT."
-  fi
+  # 2. Wait for dashboard process to be ready
+  sleep 1.0
 fi
 
 # 4. Launch the mission script in background
 echo "[Launcher] Starting mission: $MISSION_SCRIPT ..."
 python "$MISSION_SCRIPT" "$@" &
 MISSION_PID=$!
-# Give PyBullet a moment to create its window
-sleep 4.0
-# 5. Move PyBullet (Physics Server) window to the LEFT side
-if command -v xdotool &>/dev/null; then
-  echo "[Launcher] Positioning PyBullet window (LEFT side)..."
-  for attempt in 1 2 3 4 5; do
-    BULL_ID=$(xdotool search --name "Physics Server" "Bullet" 2>/dev/null | head -1)
-    if [ -z "$BULL_ID" ]; then BULL_ID=$(xdotool search --name "Bullet" 2>/dev/null | head -1); fi
-    if [ -n "$BULL_ID" ]; then
-      xdotool windowmove "$BULL_ID" 20 60
-      echo "[Launcher] PyBullet moved to x=20 y=60"
-      break
-    fi
-    sleep 0.5
-  done
-else
-  echo "[Launcher] xdotool not found. Install with: sudo apt install xdotool"
-  echo "[Launcher] Please position the PyBullet window manually to the LEFT."
-fi
+
+# No window positioning (xdotool removed for better portability)
+
+
 
 # Wait for mission to finish
 wait $MISSION_PID

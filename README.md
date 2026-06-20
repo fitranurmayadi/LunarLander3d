@@ -7,7 +7,8 @@ LunarLander3D is a custom, high-fidelity 3D Reinforcement Learning environment b
 - **Realistic Actuators:** Main thruster for vertical lift and RCS (Reaction Control System) thrusters for pitch, roll, yaw, and lateral translations.
 - **Multiple Control Baselines:** Includes three distinct conventional control strategies (V1, V2, V3) ranging from classical PID to advanced rigid-body trajectory tracking.
 - **Live Telemetry Dashboard:** Real-time Matplotlib dashboard with OSC telemetry for monitoring altitude, attitude, velocity, G-force, and more.
-- **Smart Launcher:** Automatic window positioning with `xdotool` for clean side-by-side execution.
+- **Smart Launcher:** Runs the mission and (optionally) the live dashboard. Window auto-positioning was removed for better portability.
+
 
 ## 📁 Project Structure
 ```
