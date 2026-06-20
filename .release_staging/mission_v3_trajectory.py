@@ -309,8 +309,8 @@ def run():
             log["pos"].append(cp); log["ref"].append(ref_p); log["att"].append(att)
             log["vel"].append(cv); log["ang_vel"].append(ang_vel); log["act"].append(action)
             log["ry"].append(ctrl.target_y); log["reward"].append(reward); log["g_force"].append(g_force)
-            # --- OSC telemetry (every step ~10ms) ---
-            if use_osc:
+            # --- OSC telemetry (every 50 steps) ---
+            if use_osc and i % 50 == 0:
                 cum_r = float(sum(log["reward"]))
                 dist_h = float(np.linalg.norm(cp[:2]))
                 att_deg = [float(a * 180 / np.pi) for a in att[:3]]

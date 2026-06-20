@@ -6,7 +6,7 @@ Real-time telemetry viewer using OSC protocol.
 Run this BEFORE starting a mission script.
 
 Usage:
-    python live_dashboard.py
+    python live_dashboard.py [--no-osc]
 """
 
 import sys
@@ -19,6 +19,7 @@ import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 from pythonosc import dispatcher as osc_dispatcher
 from pythonosc import osc_server
+import argparse
 
 # --- Configuration ---
 OSC_IP   = "127.0.0.1"
@@ -102,7 +103,6 @@ def _start_osc_server():
     server.serve_forever()
 
 # --- Matplotlib Setup ---
-# --- Matplotlib Setup ---
 plt.style.use('dark_background')
 fig, axs = plt.subplots(3, 2, figsize=(WIN_W / 100, WIN_H / 100), dpi=100)
 fig.canvas.manager.set_window_title("LunarLander3D Dashboard")  # Fixed window title for xdotool positioning
@@ -164,23 +164,19 @@ def _update(frame):
         rcs     = list(buf["rcs"])
         g_f     = list(buf["g_force"])
         st_id   = list(buf["state"])
-
     n = min(len(step), len(h_data))
     if n < 2:
         return
-
     t = list(range(n))
-
-    # ── Altitude & Vz ────────────────────────────────────────────────
-    ax_h.cla();  ax_vz.cla()
+    # Altitude & Vz
+    ax_h.cla(); ax_vz.cla()
     ax_h.set_facecolor('#161b22')
     ax_h.grid(True, color='#21262d', linewidth=0.6, linestyle='--')
     ax_h.set_title("Altitude & Vertical Speed", color='white', fontsize=9, pad=4)
-    # Fixed ranges to keep axis stable
-    ax_h.set_ylim(0, 2000)      # altitude in meters
-    ax_vz.set_ylim(-20, 5)      # vertical speed m/s
-    ax_h.plot(t, h_data[:n],   color=ACCENT,  lw=1.2, label='H (m)')
-    ax_vz.plot(t, vz_data[:n], color=RED,     lw=1,   alpha=0.7, label='Vz (m/s)')
+    ax_h.set_ylim(0, 2000)
+    ax_vz.set_ylim(-20, 5)
+    ax_h.plot(t, h_data[:n], color=ACCENT, lw=1.2, label='H (m)')
+    ax_vz.plot(t, vz_data[:n], color=RED, lw=1, alpha=0.7, label='Vz (m/s)')
     ax_vz.axhline(-15, color=RED, linestyle=':', lw=0.8, alpha=0.5)
     ax_h.set_ylabel('H (m)', color=ACCENT, fontsize=8)
     ax_vz.set_ylabel('Vz (m/s)', color=RED, fontsize=8)
@@ -189,35 +185,31 @@ def _update(frame):
     h1, l1 = ax_h.get_legend_handles_labels()
     h2, l2 = ax_vz.get_legend_handles_labels()
     ax_h.legend(h1+h2, l1+l2, loc='upper right', fontsize=7, framealpha=0.3)
-
-    # ── Attitude ─────────────────────────────────────────────────────
+    # Attitude
     rn = min(n, len(roll), len(pitch), len(yaw))
     ax_att.cla()
     ax_att.set_facecolor('#161b22')
     ax_att.grid(True, color='#21262d', linewidth=0.6, linestyle='--')
     ax_att.set_title("Attitude (Roll / Pitch / Yaw)", color='white', fontsize=9, pad=4)
-    # Fixed limits for attitude angles
     ax_att.set_ylim(-180, 180)
     if rn > 1:
-        ax_att.plot(t[:rn], roll[:rn],  color=RED,    lw=1,   label='Roll')
-        ax_att.plot(t[:rn], pitch[:rn], color=GREEN,  lw=1,   label='Pitch')
-        ax_att.plot(t[:rn], yaw[:rn],   color=PURPLE, lw=0.8, alpha=0.7, label='Yaw')
+        ax_att.plot(t[:rn], roll[:rn], color=RED, lw=1, label='Roll')
+        ax_att.plot(t[:rn], pitch[:rn], color=GREEN, lw=1, label='Pitch')
+        ax_att.plot(t[:rn], yaw[:rn], color=PURPLE, lw=0.8, alpha=0.7, label='Yaw')
     ax_att.set_ylabel('deg', color=GRAY, fontsize=8)
     ax_att.tick_params(colors=GRAY, labelsize=7)
     ax_att.legend(loc='upper right', fontsize=7, framealpha=0.3)
-
-    # ── Horizontal Velocity ──────────────────────────────────────────
+    # Horizontal Velocity
     vn = min(n, len(vx_data), len(vy_data))
     ax_vel.cla(); ax_vy.cla()
     ax_vel.set_facecolor('#161b22')
     ax_vel.grid(True, color='#21262d', linewidth=0.6, linestyle='--')
     ax_vel.set_title("Horizontal Velocity", color='white', fontsize=9, pad=4)
-    # Fixed limits for horizontal velocities
     ax_vel.set_ylim(-15, 15)
     ax_vy.set_ylim(-15, 15)
     if vn > 1:
         ax_vel.plot(t[:vn], vx_data[:vn], color=ACCENT, lw=1, label='Vx')
-        ax_vy.plot(t[:vn],  vy_data[:vn], color=YELLOW, lw=1, alpha=0.8, label='Vy')
+        ax_vy.plot(t[:vn], vy_data[:vn], color=YELLOW, lw=1, alpha=0.8, label='Vy')
     ax_vel.set_ylabel('Vx (m/s)', color=ACCENT, fontsize=8)
     ax_vy.set_ylabel('Vy (m/s)', color=YELLOW, fontsize=8)
     ax_vel.tick_params(colors=GRAY, labelsize=7)
@@ -225,19 +217,17 @@ def _update(frame):
     h1, l1 = ax_vel.get_legend_handles_labels()
     h2, l2 = ax_vy.get_legend_handles_labels()
     ax_vel.legend(h1+h2, l1+l2, loc='upper right', fontsize=7, framealpha=0.3)
-
-    # ── Safety Metrics ───────────────────────────────────────────────
+    # Safety Metrics
     gn = min(n, len(g_f), len(dist))
     ax_safe.cla()
     ax_safe.set_facecolor('#161b22')
     ax_safe.grid(True, color='#21262d', linewidth=0.6, linestyle='--')
     ax_safe.set_title("Safety: G-Force & Distance", color='white', fontsize=9, pad=4)
     ax_safe2 = ax_safe.twinx()
-    # Fixed ranges for safety metrics
     ax_safe.set_ylim(0, 3)
     ax_safe2.set_ylim(0, 2000)
     if gn > 1:
-        ax_safe.plot(t[:gn], g_f[:gn],  color=PURPLE, lw=1, label='G-Force')
+        ax_safe.plot(t[:gn], g_f[:gn], color=PURPLE, lw=1, label='G-Force')
         ax_safe.axhline(2.0, color=RED, linestyle=':', lw=0.8, alpha=0.5)
         ax_safe2.plot(t[:gn], dist[:gn], color=YELLOW, lw=1, alpha=0.7, label='Dist (m)')
     ax_safe.set_ylabel('G', color=PURPLE, fontsize=8)
@@ -247,19 +237,17 @@ def _update(frame):
     h1, l1 = ax_safe.get_legend_handles_labels()
     h2, l2 = ax_safe2.get_legend_handles_labels()
     ax_safe.legend(h1+h2, l1+l2, loc='upper right', fontsize=7, framealpha=0.3)
-
-    # ── Control Actions ──────────────────────────────────────────────
+    # Control Actions
     tn = min(n, len(thr), len(rcs))
     ax_act.cla(); ax_rcs.cla()
     ax_act.set_facecolor('#161b22')
     ax_act.grid(True, color='#21262d', linewidth=0.6, linestyle='--')
     ax_act.set_title("Control Actions", color='white', fontsize=9, pad=4)
-    # Fixed ranges for control actions
     ax_act.set_ylim(0, 1)
     ax_rcs.set_ylim(0, 1)
     if tn > 1:
-        ax_act.plot(t[:tn], thr[:tn], color='white', lw=1,   label='Main Thrust')
-        ax_rcs.plot(t[:tn], rcs[:tn], color=YELLOW,  lw=0.8, alpha=0.6, label='Mean RCS')
+        ax_act.plot(t[:tn], thr[:tn], color='white', lw=1, label='Main Thrust')
+        ax_rcs.plot(t[:tn], rcs[:tn], color=YELLOW, lw=0.8, alpha=0.6, label='Mean RCS')
     ax_act.set_ylabel('Thrust', color=GRAY, fontsize=8)
     ax_rcs.set_ylabel('RCS', color=YELLOW, fontsize=8)
     ax_act.tick_params(colors=GRAY, labelsize=7)
@@ -267,18 +255,16 @@ def _update(frame):
     h1, l1 = ax_act.get_legend_handles_labels()
     h2, l2 = ax_rcs.get_legend_handles_labels()
     ax_act.legend(h1+h2, l1+l2, loc='upper right', fontsize=7, framealpha=0.3)
-
-    # ── Performance ──────────────────────────────────────────────────
+    # Performance
     pn = min(n, len(cumr), len(st_id))
     ax_perf.cla(); ax_cum.cla()
     ax_perf.set_facecolor('#161b22')
     ax_perf.grid(True, color='#21262d', linewidth=0.6, linestyle='--')
     ax_perf.set_title("Mission Performance", color='white', fontsize=9, pad=4)
-    # Fixed reward axis for consistency
     ax_perf.set_ylim(-300, 300)
     if pn > 1:
-        ax_perf.plot(t[:pn], cumr[:pn],  color=GREEN, lw=1.2, label='Cum. Reward')
-        ax_cum.plot( t[:pn], st_id[:pn], color=GRAY,  lw=0.6, alpha=0.5, label='State ID')
+        ax_perf.plot(t[:pn], cumr[:pn], color=GREEN, lw=1.2, label='Cum. Reward')
+        ax_cum.plot(t[:pn], st_id[:pn], color=GRAY, lw=0.6, alpha=0.5, label='State ID')
     ax_perf.set_ylabel('Reward', color=GREEN, fontsize=8)
     ax_cum.set_ylabel('State', color=GRAY, fontsize=8)
     ax_perf.tick_params(colors=GRAY, labelsize=7)
@@ -286,7 +272,6 @@ def _update(frame):
     h1, l1 = ax_perf.get_legend_handles_labels()
     h2, l2 = ax_cum.get_legend_handles_labels()
     ax_perf.legend(h1+h2, l1+l2, loc='upper left', fontsize=7, framealpha=0.3)
-
     # Update title
     fig.suptitle(
         f"LunarLander3D — Live Telemetry  |  Episode {_ep[0]} ({_label[0]})  |  Step {n}",
@@ -294,16 +279,16 @@ def _update(frame):
     )
 
 if __name__ == "__main__":
-    # Start OSC server in background thread
-    t = threading.Thread(target=_start_osc_server, daemon=True)
-    t.start()
-
-    # Position matplotlib window (left side of screen)
+    parser = argparse.ArgumentParser(description='LunarLander3D Live Dashboard')
+    parser.add_argument('--no-osc', action='store_true', help='Run without OSC server')
+    args = parser.parse_args()
+    if not args.no_osc:
+        t = threading.Thread(target=_start_osc_server, daemon=True)
+        t.start()
     manager = plt.get_current_fig_manager()
     try:
         manager.window.wm_geometry(f"{WIN_W}x{WIN_H}+{WIN_X}+{WIN_Y}")
     except Exception:
         pass
-
     ani = animation.FuncAnimation(fig, _update, interval=200, blit=False, cache_frame_data=False)
     plt.show()

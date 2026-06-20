@@ -512,8 +512,8 @@ def run_test():
             log_data["g_force"].append(ctrl.g_force)
             log_data["state"].append(ctrl.state.value)
             
-# --- OSC telemetry (every step ~10ms) ---
-            if use_osc:
+            # --- OSC telemetry (every 50 steps) ---
+            if use_osc and i % 50 == 0:
                 cum_r = float(np.sum(log_data["reward"]))
                 osc_sender.send_state(i, float(pos_real[2]), float(vel_real[2]),
                                       float(debug["dist_h"]), float(reward),

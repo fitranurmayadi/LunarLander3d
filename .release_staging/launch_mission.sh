@@ -36,53 +36,38 @@ DASHBOARD_PID=$!
 echo "[Launcher] Dashboard PID = $DASHBOARD_PID"
 
 # 2. Wait for dashboard window to be ready
-sleep 4.0
+sleep 2.5
 
-# 3. Position the dashboard window on the RIGHT side of screen
+# 3. Try to position the dashboard window to the LEFT side of screen
 #    (Only works if xdotool is installed)
 if command -v xdotool &>/dev/null; then
-    # Position the dashboard window (RIGHT side)
+    echo "[Launcher] Positioning dashboard window (LEFT side)..."
     for attempt in 1 2 3 4 5; do
-        WIN_ID=$(xdotool search --name "LunarLander3D Dashboard" 2>/dev/null | head -1)
+        WIN_ID=$(xdotool search --name "LunarLander3D" 2>/dev/null | head -1)
         if [ -n "$WIN_ID" ]; then
-            xdotool windowmove "$WIN_ID" 1100 60
-            echo "[Launcher] Dashboard moved to x=1100 y=60"
+            xdotool windowmove "$WIN_ID" 20 60
+            echo "[Launcher] Dashboard moved to x=20 y=60"
             break
         fi
         sleep 0.5
     done
 else
     echo "[Launcher] xdotool not found. Install with: sudo apt install xdotool"
-    echo "[Launcher] Please position the dashboard window manually to the RIGHT."
+    echo "[Launcher] Please position the dashboard window manually to the LEFT."
 fi
 
-# 4. Launch the mission script in background
+# 4. Launch the mission script
 echo "[Launcher] Starting mission: $MISSION_SCRIPT ..."
-python "$MISSION_SCRIPT" "$@" &
-MISSION_PID=$!
-# Give PyBullet a moment to create its window
-sleep 4.0
-# Move PyBullet (Physics Server) window to the LEFT side
-if command -v xdotool &>/dev/null; then
-    echo "[Launcher] Positioning PyBullet window (LEFT side)..."
-    for attempt in 1 2 3 4 5; do
-        BULL_ID=$(xdotool search --name "Physics Server" "Bullet" 2>/dev/null | head -1)
-        if [ -z "$BULL_ID" ]; then BULL_ID=$(xdotool search --name "Bullet" 2>/dev/null | head -1); fi
-        if [ -n "$BULL_ID" ]; then
-            xdotool windowmove "$BULL_ID" 20 60
-            echo "[Launcher] PyBullet moved to x=20 y=60"
-            break
-        fi
-        sleep 0.5
-    done
-else
-    echo "[Launcher] xdotool not found. Install with: sudo apt install xdotool"
-    echo "[Launcher] Please position the PyBullet window manually to the RIGHT."
-fi
-# Wait for mission to finish
-wait $MISSION_PID
+python "$MISSION_SCRIPT" "$@"
 EXIT_CODE=$?
-# stray fi removed
+
+# 5. When mission ends, try to move PyBullet window to the RIGHT
+if command -v xdotool &>/dev/null; then
+    BULL_ID=$(xdotool search --name "Bullet" 2>/dev/null | head -1)
+    if [ -n "$BULL_ID" ]; then
+        xdotool windowmove "$BULL_ID" 1100 60
+    fi
+fi
 
 echo ""
 echo "[Launcher] Mission complete (exit $EXIT_CODE)."

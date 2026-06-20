@@ -102,10 +102,8 @@ def _start_osc_server():
     server.serve_forever()
 
 # --- Matplotlib Setup ---
-# --- Matplotlib Setup ---
 plt.style.use('dark_background')
 fig, axs = plt.subplots(3, 2, figsize=(WIN_W / 100, WIN_H / 100), dpi=100)
-fig.canvas.manager.set_window_title("LunarLander3D Dashboard")  # Fixed window title for xdotool positioning
 fig.patch.set_facecolor('#0d1117')
 fig.suptitle("LunarLander3D — Live Telemetry", fontsize=14, color='white', fontweight='bold')
 
@@ -176,9 +174,6 @@ def _update(frame):
     ax_h.set_facecolor('#161b22')
     ax_h.grid(True, color='#21262d', linewidth=0.6, linestyle='--')
     ax_h.set_title("Altitude & Vertical Speed", color='white', fontsize=9, pad=4)
-    # Fixed ranges to keep axis stable
-    ax_h.set_ylim(0, 2000)      # altitude in meters
-    ax_vz.set_ylim(-20, 5)      # vertical speed m/s
     ax_h.plot(t, h_data[:n],   color=ACCENT,  lw=1.2, label='H (m)')
     ax_vz.plot(t, vz_data[:n], color=RED,     lw=1,   alpha=0.7, label='Vz (m/s)')
     ax_vz.axhline(-15, color=RED, linestyle=':', lw=0.8, alpha=0.5)
@@ -196,8 +191,6 @@ def _update(frame):
     ax_att.set_facecolor('#161b22')
     ax_att.grid(True, color='#21262d', linewidth=0.6, linestyle='--')
     ax_att.set_title("Attitude (Roll / Pitch / Yaw)", color='white', fontsize=9, pad=4)
-    # Fixed limits for attitude angles
-    ax_att.set_ylim(-180, 180)
     if rn > 1:
         ax_att.plot(t[:rn], roll[:rn],  color=RED,    lw=1,   label='Roll')
         ax_att.plot(t[:rn], pitch[:rn], color=GREEN,  lw=1,   label='Pitch')
@@ -212,9 +205,6 @@ def _update(frame):
     ax_vel.set_facecolor('#161b22')
     ax_vel.grid(True, color='#21262d', linewidth=0.6, linestyle='--')
     ax_vel.set_title("Horizontal Velocity", color='white', fontsize=9, pad=4)
-    # Fixed limits for horizontal velocities
-    ax_vel.set_ylim(-15, 15)
-    ax_vy.set_ylim(-15, 15)
     if vn > 1:
         ax_vel.plot(t[:vn], vx_data[:vn], color=ACCENT, lw=1, label='Vx')
         ax_vy.plot(t[:vn],  vy_data[:vn], color=YELLOW, lw=1, alpha=0.8, label='Vy')
@@ -233,9 +223,6 @@ def _update(frame):
     ax_safe.grid(True, color='#21262d', linewidth=0.6, linestyle='--')
     ax_safe.set_title("Safety: G-Force & Distance", color='white', fontsize=9, pad=4)
     ax_safe2 = ax_safe.twinx()
-    # Fixed ranges for safety metrics
-    ax_safe.set_ylim(0, 3)
-    ax_safe2.set_ylim(0, 2000)
     if gn > 1:
         ax_safe.plot(t[:gn], g_f[:gn],  color=PURPLE, lw=1, label='G-Force')
         ax_safe.axhline(2.0, color=RED, linestyle=':', lw=0.8, alpha=0.5)
@@ -254,9 +241,6 @@ def _update(frame):
     ax_act.set_facecolor('#161b22')
     ax_act.grid(True, color='#21262d', linewidth=0.6, linestyle='--')
     ax_act.set_title("Control Actions", color='white', fontsize=9, pad=4)
-    # Fixed ranges for control actions
-    ax_act.set_ylim(0, 1)
-    ax_rcs.set_ylim(0, 1)
     if tn > 1:
         ax_act.plot(t[:tn], thr[:tn], color='white', lw=1,   label='Main Thrust')
         ax_rcs.plot(t[:tn], rcs[:tn], color=YELLOW,  lw=0.8, alpha=0.6, label='Mean RCS')
@@ -274,8 +258,6 @@ def _update(frame):
     ax_perf.set_facecolor('#161b22')
     ax_perf.grid(True, color='#21262d', linewidth=0.6, linestyle='--')
     ax_perf.set_title("Mission Performance", color='white', fontsize=9, pad=4)
-    # Fixed reward axis for consistency
-    ax_perf.set_ylim(-300, 300)
     if pn > 1:
         ax_perf.plot(t[:pn], cumr[:pn],  color=GREEN, lw=1.2, label='Cum. Reward')
         ax_cum.plot( t[:pn], st_id[:pn], color=GRAY,  lw=0.6, alpha=0.5, label='State ID')
