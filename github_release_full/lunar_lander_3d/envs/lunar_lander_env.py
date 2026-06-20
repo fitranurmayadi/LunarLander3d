@@ -166,7 +166,7 @@ class LunarLander3DEnv(gym.Env):
     def _load_lander(self, initial_pos=None, initial_orient=None):
         if self._bullet_client is None:
             if self.render_mode == "human":
-                self._bullet_client = bullet_client.BulletClient(pybullet.GUI, options="--width=1080 --height=1080")
+                self._bullet_client = bullet_client.BulletClient(pybullet.GUI, options="--width=800 --height=800")
                 self._bullet_client.configureDebugVisualizer(self._bullet_client.COV_ENABLE_GUI, 0)
             else:
                 self._bullet_client = bullet_client.BulletClient(pybullet.DIRECT)
