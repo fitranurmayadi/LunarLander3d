@@ -187,7 +187,7 @@ This controller uses a Finite State Machine (FSM) combined with decoupled PID co
 - Inefficient and slow trajectory.
 - Stops at invisible "waypoints" before proceeding to the next state, causing a robotic, step-by-step flight path.
 
-**V1 Test (spawn=-1000 -1000 1000, orient=45 45 45; 1 episode; no-dashboard/no-render):**
+**V1 Test (spawn=-1000 -1000 1000, orient=45 45 45; no-dashboard/no-render):**
 
 ![V1 Report](reports/mission_v1_ep1_report.png)
 
@@ -204,7 +204,7 @@ Unlike V1, V2 blends transit and landing phases. It uses **Direct Thrust Vectori
 - Strongly coupled dynamics (pitching to move laterally inherently reduces vertical lift).
 - Difficult to tune the safety envelope to prevent the lander from tumbling at high speeds.
 
-**V2 Test (spawn=-1000 -1000 1000, orient=45 45 45; 1 episode; no-dashboard/no-render):**
+**V2 Test (spawn=-1000 -1000 1000, orient=45 45 45; no-dashboard/no-render):**
 
 ![V2 Report](reports/mission_v2_ep1_report.png)
 
@@ -224,7 +224,7 @@ This is the most advanced controller. It abandons simple error-based PID in favo
 - Computationally heavy.
 - Very sensitive to simulation step-size variations ($dt$). If PyBullet stutters, the trajectory tracking error diverges rapidly.
 
-**V3 Test (spawn=-1000 -1000 1000, orient=45 45 45; 1 episode; no-dashboard/no-render):**
+**V3 Test (spawn=-1000 -1000 1000, orient=45 45 45; no-dashboard/no-render):**
 
 ![V3 Report](reports/mission_v3_ep1_report.png)
 
