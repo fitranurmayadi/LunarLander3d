@@ -308,41 +308,50 @@ def run_test():
         fig.suptitle(f"Lunar Lander V1 (Classic) - Episode {ep+1} | Reward: {total_reward:.1f}", fontsize=16)
         t = np.arange(len(log_data["vel"])) * ctrl.dt
         ax1 = axs[0,0]
-        ax1.plot([p[0] for p in log_data["pos"]],[p[1] for p in log_data["pos"]],'b-')
-        ax1.plot(start_x,start_y,'go')
-        ax1.plot(0,0,'rx')
-        ax1.set_title('Top-Down Trajectory'); ax1.set_xlim(-1100,1100); ax1.set_ylim(-1100,1100); ax1.grid(True,linestyle='--'); ax1.set_aspect('equal')
+        ax1.plot([p[0] for p in log_data["pos"]],[p[1] for p in log_data["pos"]],'b-', label='Path')
+        ax1.plot(start_x,start_y,'go', label='Start')
+        ax1.plot(0,0,'rx', label='Target')
+        ax1.set_title('Top-Down Trajectory'); ax1.set_xlim(-1100,1100); ax1.set_ylim(-1100,1100)
+        ax1.grid(True,linestyle='--'); ax1.legend(); ax1.set_aspect('equal')
+        
         ax2 = axs[0,1]
-        ax2.plot(t,[p[2] for p in log_data["pos"][1:]],'b-')
+        ax2.plot(t,[p[2] for p in log_data["pos"][1:]],'b-', label='Altitude (H)')
         ax2_v = ax2.twinx()
-        ax2_v.plot(t,[v[2] for v in log_data["vel"]],'r-',alpha=0.5)
-        ax2_v.axhline(y=-15,color='r',linestyle=':')
+        ax2_v.plot(t,[v[2] for v in log_data["vel"]],'r-',alpha=0.5, label='Vz')
+        ax2_v.axhline(y=-15,color='r',linestyle=':', label='Limit VZ (15)')
         ax2.set_title('Vertical Profile'); ax2.set_ylabel('Height (m)'); ax2_v.set_ylabel('Vz (m/s)')
         ax2.grid(True); ax2.legend(loc='upper left'); ax2_v.legend(loc='upper right')
+        
         ax3 = axs[1,0]
-        ax3.plot(t,[a[0] for a in log_data["att"]],'r-')
-        ax3.plot(t,[a[1] for a in log_data["att"]],'g-')
-        ax3.plot(t,[a[2] for a in log_data["att"]],'k-')
-        ax3.set_title('Attitude'); ax3.set_ylabel('Degrees'); ax3.grid(True)
+        ax3.plot(t,[a[0] for a in log_data["att"]],'r-', label='Roll')
+        ax3.plot(t,[a[1] for a in log_data["att"]],'g-', label='Pitch')
+        ax3.plot(t,[a[2] for a in log_data["att"]],'k-', label='Yaw')
+        ax3.set_title('Attitude'); ax3.set_ylabel('Degrees'); ax3.grid(True); ax3.legend()
+        
         ax4 = axs[1,1]
-        ax4.plot(t,log_data["g_force"],'m-')
-        ax4.axhline(y=2.0,color='r',linestyle='--')
+        ax4.plot(t,log_data["g_force"],'m-', label='G-Force')
+        ax4.axhline(y=2.0,color='r',linestyle='--', label='Limit (2.0G)')
         ax4_w = ax4.twinx()
         ax_w = np.array(log_data["ang_vel"]) * 180 / np.pi
-        ax4_w.plot(t,np.linalg.norm(ax_w,axis=1),'c-')
-        ax4_w.axhline(y=30,color='c',linestyle=':')
+        ax4_w.plot(t,np.linalg.norm(ax_w,axis=1),'c-', alpha=0.5, label='|Omega|')
+        ax4_w.axhline(y=30,color='c',linestyle=':', label='Vertigo (30)')
         ax4.set_title('Safety Metrics'); ax4.set_ylabel('G Units'); ax4_w.set_ylabel('deg/s')
+        ax4.grid(True); ax4.legend(loc='upper left'); ax4_w.legend(loc='upper right')
+        
         ax5 = axs[2,0]
         acts = np.array(log_data["action"])
-        ax5.plot(t,acts[:,0],'k-')
+        ax5.plot(t,acts[:,0],'k-', label='Main Thrust')
         ax5_rcs = ax5.twinx()
-        ax5_rcs.plot(t,np.mean(acts[:,1:],axis=1),'y-')
+        ax5_rcs.plot(t,np.mean(acts[:,1:],axis=1),'y-', alpha=0.4, label='Mean RCS')
         ax5.set_title('Control Actions'); ax5.set_ylabel('Thrust %'); ax5_rcs.set_ylabel('RCS Intensity')
+        ax5.grid(True); ax5.legend(loc='upper left'); ax5_rcs.legend(loc='upper right')
+        
         ax6 = axs[2,1]
-        ax6.plot(t,np.cumsum(log_data["reward"]),'g-')
+        ax6.plot(t,np.cumsum(log_data["reward"]),'g-', label='Cum Reward')
         ax6_s = ax6.twinx()
-        ax6_s.plot(t,log_data["state"],'k:')
+        ax6_s.plot(t,log_data["state"],'k:', alpha=0.3, label='State Index')
         ax6.set_title('Mission Performance'); ax6.set_ylabel('Reward'); ax6_s.set_ylabel('State ID')
+        ax6.grid(True); ax6.legend(loc='upper left'); ax6_s.legend(loc='upper right')
         plt.tight_layout()
         os.makedirs('reports', exist_ok=True)
         filename = f'reports/mission_v1_ep{ep+1}_report.png'
